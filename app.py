@@ -11,12 +11,22 @@ import database
 import crypto_utils
 
 app = Flask(__name__)
-app.secret_key = os.urandom(32)
+app.secret_key = os.environ.get("SECRET_KEY", base64.b64encode(os.urandom(32)).decode())
 
 ENCRYPTED_DIR = os.path.join(os.path.dirname(__file__), "encrypted_files")
 RECEIVED_DIR  = os.path.join(os.path.dirname(__file__), "received_files")
-os.makedirs(ENCRYPTED_DIR, exist_ok=True)
-os.makedirs(RECEIVED_DIR,  exist_ok=True)
+
+try:
+    os.makedirs(ENCRYPTED_DIR, exist_ok=True)
+    os.makedirs(RECEIVED_DIR,  exist_ok=True)
+except Exception:
+    pass
+
+# Initialize DB on startup (works locally; on Vercel SQLite is ephemeral)
+try:
+    database.init_db()
+except Exception as e:
+    print(f"DB init skipped: {e}")
 
 ALLOWED_EXTENSIONS = {
     'txt','pdf','png','jpg','jpeg','gif','doc','docx',
@@ -184,7 +194,7 @@ def send_file():
         return err("No file uploaded.")
 
     f         = request.files["file"]
-    receivers = request.form.getlist("receivers")   # one-to-many
+    receivers = request.form.getlist("receivers")
     if not receivers:
         return err("Select at least one recipient.")
     if not f or not f.filename:
@@ -202,7 +212,6 @@ def send_file():
     if sender_user["key_revoked"]:
         return err("Your key has been revoked. You cannot send files.")
 
-    # Validate all receivers first
     receiver_users = []
     for rname in receivers:
         ru = database.get_user(rname.strip())
@@ -217,26 +226,25 @@ def send_file():
     results           = []
     total_start       = time.perf_counter()
 
-    # Compute MD5 once
     md5_digest, md5_ms = crypto_utils.timed(crypto_utils.compute_md5_bytes, file_data)
-
-    # Sign once (sender's private key)
     signature, sign_ms = crypto_utils.timed(crypto_utils.sign_digest, md5_digest, sender_user["private_key"])
 
     for receiver in receiver_users:
         try:
-            # AES key per recipient
             aes_key, aes_key_ms = crypto_utils.timed(crypto_utils.generate_aes_key)
 
-            # Encrypt file bytes
             (encrypted_data, iv), aes_enc_ms = crypto_utils.timed(
                 crypto_utils.aes_encrypt_bytes, file_data, aes_key
             )
 
             enc_filename = f"{sender_user['username']}_to_{receiver['username']}_{original_filename}.enc"
             enc_filepath = os.path.join(ENCRYPTED_DIR, enc_filename)
-            with open(enc_filepath, "wb") as out:
-                out.write(encrypted_data)
+
+            try:
+                with open(enc_filepath, "wb") as out:
+                    out.write(encrypted_data)
+            except Exception:
+                enc_filepath = None  # Vercel can't write files
 
             enc_aes_key_b64, rsa_wrap_ms = crypto_utils.timed(
                 crypto_utils.rsa_encrypt_aes_key, aes_key, receiver["public_key"]
