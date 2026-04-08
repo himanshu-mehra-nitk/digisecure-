@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DigiSecure — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #080b0f;
+    --panel:   #0d1117;
+    --surface: #111820;
+    --card:    #141c25;
+    --border:  #1c2535;
+    --border2: #243040;
+    --accent:  #00d4aa;
+    --accent2: #0099ff;
+    --danger:  #ff4455;
+    --warn:    #ffaa00;
+    --success: #00d4aa;
+    --text:    #c8d4e0;
+    --muted:   #4a5a6e;
+    --muted2:  #2a3545;
+    --mono:    'Space Mono', monospace;
+    --sans:    'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px;
+    min-width: 230px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 0;
+  }
+  .sidebar-logo {
+    padding: 0 1.25rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: .75rem;
+  }
+  .sidebar-logo h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.02em;
+  }
+  .sidebar-logo h2 span { color: var(--accent); }
+  .sidebar-logo p {
+    font-family: var(--mono);
+    font-size: .58rem;
+    color: var(--muted);
+    margin-top: .2rem;
+    letter-spacing: .08em;
+  }
+
+  .nav-section {
+    padding: .5rem 1rem .25rem;
+    font-family: var(--mono);
+    font-size: .58rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .6rem 1.25rem;
+    margin: .1rem .5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all .18s;
+    border: none;
+    background: none;
+    width: calc(100% - 1rem);
+    text-align: left;
+  }
+  .nav-item:hover { background: var(--surface); color: var(--text); }
+  .nav-item.active { background: rgba(0,212,170,.1); color: var(--accent); }
+  .nav-item .icon { font-size: 1rem; flex-shrink: 0; }
+  .nav-item .badge-count {
+    margin-left: auto;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--mono);
+    font-size: .6rem;
+    font-weight: 700;
+    padding: .1rem .45rem;
+    border-radius: 999px;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin-bottom: .75rem;
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #000; font-size: .8rem; flex-shrink: 0;
+  }
+  .user-info .uname { font-size: .85rem; font-weight: 700; color: #fff; }
+  .user-info .uemail { font-family: var(--mono); font-size: .62rem; color: var(--muted); }
+  .btn-logout {
+    width: 100%;
+    padding: .55rem;
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: .72rem;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .topbar {
+    padding: 1rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+  .topbar h1 { font-size: 1.15rem; font-weight: 800; color: #fff; }
+  .topbar p { font-family: var(--mono); font-size: .68rem; color: var(--muted); margin-top: .15rem; }
+  .status-pill {
+    display: flex; align-items: center; gap: .4rem;
+    background: rgba(0,212,170,.08);
+    border: 1px solid rgba(0,212,170,.2);
+    border-radius: 999px;
+    padding: .3rem .75rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    color: var(--accent);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink 2s ease infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .content { flex: 1; overflow-y: auto; padding: 1.75rem; }
+  .view { display: none; animation: fadeIn .25s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  /* ── CARDS ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+  }
+  .stat-card .s-label {
+    font-family: var(--mono);
+    font-size: .62rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .5rem;
+  }
+  .stat-card .s-val {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .stat-card .s-sub { font-family: var(--mono); font-size: .65rem; color: var(--muted); margin-top: .35rem; }
+
+  /* ── SEND PANEL ── */
+  .send-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .panel-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--border2);
+    border-radius: 10px;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 1.25rem;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,212,170,.05);
+  }
+  .drop-zone .dz-icon { font-size: 2rem; margin-bottom: .5rem; }
+  .drop-zone p { font-family: var(--mono); font-size: .75rem; color: var(--muted); }
+  .drop-zone p strong { color: var(--accent); }
+  .drop-zone .file-chosen { color: var(--text); font-size: .82rem; margin-top: .5rem; }
+  #file-input { display: none; }
+
+  .form-row { margin-bottom: 1.1rem; }
+  .form-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .65rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .45rem;
+  }
+
+  .recipient-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: .5rem;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .recipient-chip {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .55rem .85rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .18s;
+    font-size: .8rem;
+    user-select: none;
+  }
+  .recipient-chip input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .recipient-chip:has(input:checked) {
+    border-color: var(--accent);
+    background: rgba(0,212,170,.08);
+    color: var(--accent);
+  }
+  .recipient-chip .r-cert { font-family: var(--mono); font-size: .55rem; color: var(--muted); }
+  .recipient-chip.revoked { opacity: .4; cursor: not-allowed; }
+
+  .btn {
+    padding: .75rem 1.4rem;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00f0c0; box-shadow: 0 4px 20px rgba(0,212,170,.25); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .btn-danger  { background: rgba(255,68,85,.1); color: var(--danger); border: 1px solid rgba(255,68,85,.3); }
+  .btn-danger:hover { background: rgba(255,68,85,.2); }
+  .btn-ghost   { background: none; color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text); }
+  .btn-sm { padding: .4rem .85rem; font-size: .68rem; }
+
+  /* Progress steps */
+  .progress-steps {
+    display: none;
+    margin-top: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+  }
+  .progress-steps.show { display: block; }
+  .step { display: flex; align-items: center; gap: .65rem; padding: .3rem 0; color: var(--muted); }
+  .step.done { color: var(--accent); }
+  .step.active { color: var(--text); }
+  .step.error { color: var(--danger); }
+  .step-icon { width: 16px; text-align: center; flex-shrink: 0; }
+
+  /* ── TABLES ── */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .table-header {
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .table-header h3 { font-size: .95rem; font-weight: 700; color: #fff; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: .6rem 1.25rem;
+    font-family: var(--mono);
+    font-size: .6rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  td {
+    padding: .75rem 1.25rem;
+    font-size: .82rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  .mono-cell { font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+
+  .pill {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+  }
+  .pill-ok     { background: rgba(0,212,170,.12);  color: var(--accent); border: 1px solid rgba(0,212,170,.3); }
+  .pill-warn   { background: rgba(255,170,0,.1);   color: var(--warn);   border: 1px solid rgba(255,170,0,.3); }
+  .pill-danger { background: rgba(255,68,85,.1);   color: var(--danger); border: 1px solid rgba(255,68,85,.3); }
+  .pill-grey   { background: var(--muted2);        color: var(--muted);  border: 1px solid var(--border); }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,.75);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    width: 90%; max-width: 520px;
+    max-height: 85vh; overflow-y: auto;
+    padding: 1.75rem;
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:none} }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .modal-header h3 { font-size: 1rem; font-weight: 700; color: #fff; }
+  .modal-close {
+    background: none; border: none; color: var(--muted); font-size: 1.3rem;
+    cursor: pointer; line-height: 1; padding: .2rem;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .result-row {
+    display: flex; align-items: flex-start; gap: .75rem;
+    padding: .75rem 0; border-bottom: 1px solid var(--border);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
+  .result-key { font-family: var(--mono); font-size: .65rem; color: var(--muted); margin-bottom: .2rem; }
+  .result-val { font-size: .85rem; color: var(--text); word-break: break-all; }
+
+  /* ── CERT ── */
+  .cert-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: var(--mono);
+    font-size: .65rem;
+    color: var(--accent);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: .75rem;
+  }
+
+  /* ── TOAST ── */
+  .toast-container {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
+    display: flex; flex-direction: column; gap: .5rem;
+  }
+  .toast {
+    padding: .75rem 1.2rem;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: .74rem;
+    display: flex; align-items: center; gap: .6rem;
+    animation: toastIn .3s ease;
+    max-width: 360px;
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+  .toast-success { background: rgba(0,212,170,.15); border: 1px solid rgba(0,212,170,.4); color: var(--accent); }
+  .toast-error   { background: rgba(255,68,85,.15);  border: 1px solid rgba(255,68,85,.4);  color: #ff8899; }
+  .toast-info    { background: rgba(0,153,255,.15);  border: 1px solid rgba(0,153,255,.4);  color: #66bbff; }
+
+  .spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid rgba(0,0,0,.3); border-top-color: #000;
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  .empty-state {
+    text-align: center; padding: 3rem 1rem; color: var(--muted);
+    font-family: var(--mono); font-size: .75rem;
+  }
+  .empty-state .e-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+
+  /* stats table */
+  .stats-table th, .stats-table td { padding: .5rem .75rem; font-size: .72rem; }
+  .ms-val { font-family: var(--mono); color: var(--accent2); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2>Digi<span>Secure</span></h2>
+    <p>v2.0 · X.509 + AES-256</p>
+  </div>
+
+  <div class="nav-section">Transfer</div>
+  <button class="nav-item active" onclick="showView('send')">
+    <span class="icon">📤</span> Send File
+  </button>
+  <button class="nav-item" onclick="showView('inbox')">
+    <span class="icon">📥</span> Inbox
+    <span class="badge-count" id="inbox-count" style="display:none"></span>
+  </button>
+  <button class="nav-item" onclick="showView('sent')">
+    <span class="icon">📂</span> Sent Files
+  </button>
+
+  <div class="nav-section" style="margin-top:.5rem">System</div>
+  <button class="nav-item" onclick="showView('verify')">
+    <span class="icon">🔍</span> Verify
+  </button>
+  <button class="nav-item" onclick="showView('certificates')">
+    <span class="icon">🏅</span> Certificates
+  </button>
+  <button class="nav-item" onclick="showView('stats')">
+    <span class="icon">📊</span> Stats
+  </button>
+
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="avatar" id="sidebar-avatar">?</div>
+      <div class="user-info">
+        <div class="uname" id="sidebar-uname">Loading…</div>
+        <div class="uemail" id="sidebar-email"></div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">⏻ Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1 id="topbar-title">Send File</h1>
+      <p id="topbar-sub">Encrypt and sign a document for one or more recipients</p>
+    </div>
+    <div class="status-pill"><div class="status-dot"></div> Secure Session</div>
+  </div>
+
+  <div class="content">
+
+    <!-- SEND -->
+    <div class="view active" id="view-send">
+      <div class="send-panel">
+        <div class="panel-title">🔒 Encrypt & Send</div>
+
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div class="dz-icon">📄</div>
+          <p>Drop file here or <strong>click to browse</strong></p>
+          <p style="margin-top:.3rem">Max 50 MB · txt pdf png jpg doc xlsx zip py…</p>
+          <div class="file-chosen" id="file-chosen"></div>
+        </div>
+        <input type="file" id="file-input" onchange="onFileSelected(this)">
+
+        <div class="form-row">
+          <label class="form-label">Recipients (select one or more)</label>
+          <div class="recipient-grid" id="recipient-grid">
+            <div style="color:var(--muted);font-family:var(--mono);font-size:.72rem">Loading users…</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="send-btn" onclick="doSend()">
+          🔐 Encrypt & Send
+        </button>
+
+        <div class="progress-steps" id="progress-steps">
+          <div class="step" id="step-md5">  <span class="step-icon">○</span> Computing MD5 hash…</div>
+          <div class="step" id="step-aes">  <span class="step-icon">○</span> Encrypting with AES-256-CBC…</div>
+          <div class="step" id="step-rsa">  <span class="step-icon">○</span> Wrapping key with RSA-OAEP…</div>
+          <div class="step" id="step-sign"> <span class="step-icon">○</span> Signing digest with RSA…</div>
+          <div class="step" id="step-save"> <span class="step-icon">○</span> Saving to secure storage…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INBOX -->
+    <div class="view" id="view-inbox">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>📥 Inbox</h3>
+          <button class="btn btn-ghost btn-sm" onclick="loadInbox()">↺ Refresh</button>
+        </div>
+        <div id="inbox-table-wrap">
+          <div class="empty-state"><div class="e-icon">📭</div>No messages yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SENT -->
+    <div class="view" id="view-sent">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>📂 Sent Files</h3>
+          <button class="btn btn-ghost btn-sm" onclick="loadSent()">↺ Refresh</button>
+        </div>
+        <div id="sent-table-wrap">
+          <div class="empty-state"><div class="e-icon">📂</div>Nothing sent yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERIFY -->
+    <div class="view" id="view-verify">
+      <div class="send-panel">
+        <div class="panel-title">🔍 Third-Party Verification</div>
+        <div class="form-row">
+          <label class="form-label">Transfer ID</label>
+          <input type="number" id="verify-id" placeholder="Enter transfer ID…"
+            style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.85rem;padding:.7rem 1rem;outline:none;width:100%">
+        </div>
+        <button class="btn btn-primary" onclick="doVerify()">🔍 Verify Transfer</button>
+      </div>
+      <div id="verify-result"></div>
+      <div class="table-wrap" style="margin-top:1.25rem">
+        <div class="table-header"><h3>All Transfers</h3></div>
+        <div id="all-transfers-wrap">
+          <div class="empty-state"><div class="e-icon">📋</div>No transfers yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATES -->
+    <div class="view" id="view-certificates">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>🏅 X.509 Certificates</h3>
+          <button class="btn btn-danger btn-sm" onclick="confirmRevoke()">⚠ Revoke My Key</button>
+        </div>
+        <div id="certs-table-wrap">
+          <div class="empty-state"><div class="e-icon">🏅</div>Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="view" id="view-stats">
+      <div class="stat-grid" id="stat-grid"></div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>📊 Cryptographic Timing</h3>
+          <button class="btn btn-ghost btn-sm" onclick="loadStats()">↺ Refresh</button>
+        </div>
+        <div id="stats-table-wrap">
+          <div class="empty-state"><div class="e-icon">📊</div>No stats yet</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- MODALS -->
+
+<!-- Receive result -->
+<div class="modal-overlay" id="modal-receive">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📥 Decrypt & Verify</h3>
+      <button class="modal-close" onclick="closeModal('modal-receive')">✕</button>
+    </div>
+    <div id="modal-receive-body"></div>
+  </div>
+</div>
+
+<!-- Cert viewer -->
+<div class="modal-overlay" id="modal-cert">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🏅 X.509 Certificate</h3>
+      <button class="modal-close" onclick="closeModal('modal-cert')">✕</button>
+    </div>
+    <div id="modal-cert-body"></div>
+  </div>
+</div>
+
+<!-- Verify result -->
+<div class="modal-overlay" id="modal-verify">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🔍 Verification Result</h3>
+      <button class="modal-close" onclick="closeModal('modal-verify')">✕</button>
+    </div>
+    <div id="modal-verify-body"></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ── state ──────────────────────────────────────────────────────────────────
+let currentUser = null;
+let allUsers    = [];
+let selectedFile = null;
+
+const VIEWS = {
+  send:         {title:'Send File',         sub:'Encrypt and sign for one or more recipients'},
+  inbox:        {title:'Inbox',             sub:'Your received encrypted files'},
+  sent:         {title:'Sent Files',        sub:'Manage and delete your sent transfers'},
+  verify:       {title:'Verify',            sub:'Third-party verification panel'},
+  certificates: {title:'Certificates',      sub:'X.509 certificates for all registered users'},
+  stats:        {title:'Stats & Timing',    sub:'Cryptographic operation benchmarks'},
+};
+
+// ── init ──────────────────────────────────────────────────────────────────
+async function init() {
+  const r = await fetch('/api/me');
+  const d = await r.json();
+  if (!d.logged_in) { window.location = '/'; return; }
+  currentUser = d;
+  document.getElementById('sidebar-avatar').textContent = d.username[0].toUpperCase();
+  document.getElementById('sidebar-uname').textContent  = d.username;
+  document.getElementById('sidebar-email').textContent  = d.email;
+  loadUsers();
+  loadInboxCount();
+  loadInbox();
+}
+
+// ── navigation ─────────────────────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  const btns = document.querySelectorAll('.nav-item');
+  btns.forEach(b => { if (b.textContent.trim().toLowerCase().includes(name.slice(0,4))) b.classList.add('active'); });
+  document.getElementById('topbar-title').textContent = VIEWS[name]?.title || name;
+  document.getElementById('topbar-sub').textContent   = VIEWS[name]?.sub   || '';
+  if (name === 'inbox')        loadInbox();
+  if (name === 'sent')         loadSent();
+  if (name === 'stats')        loadStats();
+  if (name === 'certificates') loadCerts();
+  if (name === 'verify')       loadAllTransfers();
+}
+
+// ── toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='info', dur=4000) {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  const icons = {success:'✓', error:'✕', info:'ℹ'};
+  el.innerHTML = `<span>${icons[type]||'●'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+// ── modal ──────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── logout ─────────────────────────────────────────────────────────────────
+async function doLogout() {
+  await fetch('/api/logout', {method:'POST'});
+  window.location = '/';
+}
+
+// ── users / recipients ─────────────────────────────────────────────────────
+async function loadUsers() {
+  const r = await fetch('/api/users');
+  allUsers = await r.json();
+  renderRecipientGrid();
+}
+
+function renderRecipientGrid() {
+  const grid = document.getElementById('recipient-grid');
+  if (!allUsers.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-family:var(--mono);font-size:.72rem">No other users registered.</div>';
+    return;
+  }
+  grid.innerHTML = allUsers.map(u => `
+    <label class="recipient-chip ${u.key_revoked ? 'revoked' : ''}">
+      <input type="checkbox" name="receivers" value="${u.username}" ${u.key_revoked ? 'disabled' : ''}>
+      <div>
+        <div>${u.username}</div>
+        <div class="r-cert">${u.key_revoked ? '⛔ revoked' : '✓ cert active'}</div>
+      </div>
+    </label>
+  `).join('');
+}
+
+// ── file drop ─────────────────────────────────────────────────────────────
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('drag-over');
+  const files = e.dataTransfer.files;
+  if (files[0]) setFile(files[0]);
+});
+function onFileSelected(input) { if (input.files[0]) setFile(input.files[0]); }
+function setFile(file) {
+  selectedFile = file;
+  document.getElementById('file-chosen').textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+}
+
+// ── send ──────────────────────────────────────────────────────────────────
+const STEPS = ['md5','aes','rsa','sign','save'];
+function setStep(id, state) {
+  const el = document.getElementById('step-' + id);
+  if (!el) return;
+  el.className = 'step ' + state;
+  el.querySelector('.step-icon').textContent = state==='done' ? '✓' : state==='active' ? '►' : state==='error' ? '✕' : '○';
+}
+
+async function doSend() {
+  const receivers = [...document.querySelectorAll('input[name=receivers]:checked')].map(c => c.value);
+  if (!selectedFile)   { toast('Please select a file.', 'error'); return; }
+  if (!receivers.length) { toast('Select at least one recipient.', 'error'); return; }
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Encrypting…';
+  document.getElementById('progress-steps').classList.add('show');
+  STEPS.forEach(s => setStep(s, 'pending'));
+
+  // Animate steps
+  const stepIds = ['md5','aes','rsa','sign','save'];
+  let i = 0;
+  const stepInterval = setInterval(() => {
+    if (i > 0) setStep(stepIds[i-1], 'done');
+    if (i < stepIds.length) setStep(stepIds[i++], 'active');
+    else clearInterval(stepInterval);
+  }, 500);
+
+  const fd = new FormData();
+  fd.append('file', selectedFile);
+  receivers.forEach(r => fd.append('receivers', r));
+
+  try {
+    const resp = await fetch('/api/send', { method:'POST', body: fd });
+    const d = await resp.json();
+    clearInterval(stepInterval);
+
+    if (d.success) {
+      STEPS.forEach(s => setStep(s, 'done'));
+      const ok = d.results.filter(r => !r.error);
+      const fail = d.results.filter(r => r.error);
+      if (ok.length)   toast(`✓ Sent to ${ok.map(r=>r.receiver).join(', ')}`, 'success', 5000);
+      if (fail.length) toast(`Failed: ${fail.map(r=>r.receiver+': '+r.error).join('; ')}`, 'error', 6000);
+      selectedFile = null;
+      document.getElementById('file-chosen').textContent = '';
+      document.getElementById('file-input').value = '';
+      setTimeout(() => document.getElementById('progress-steps').classList.remove('show'), 2000);
+      loadInboxCount();
+    } else {
+      STEPS.forEach(s => setStep(s, 'pending'));
+      setStep('md5', 'error');
+      toast(d.error || 'Send failed.', 'error');
+    }
+  } catch(e) {
+    clearInterval(stepInterval);
+    STEPS.forEach(s => setStep(s, 'pending'));
+    toast('Network error. Please try again.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔐 Encrypt & Send';
+  }
+}
+
+// ── inbox ─────────────────────────────────────────────────────────────────
+async function loadInbox() {
+  const r = await fetch('/api/inbox');
+  const transfers = await r.json();
+  const wrap = document.getElementById('inbox-table-wrap');
+  if (!transfers.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="e-icon">📭</div>Your inbox is empty.</div>';
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr>
+      <th>ID</th><th>From</th><th>Filename</th><th>Size</th><th>Status</th><th>Date</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${transfers.map(t => `
+      <tr>
+        <td class="mono-cell">#${t.id}</td>
+        <td><strong>${t.sender}</strong></td>
+        <td>${t.original_filename}</td>
+        <td class="mono-cell">${t.file_size ? (t.file_size/1024).toFixed(1)+'KB' : '—'}</td>
+        <td>${t.file_deleted
+          ? '<span class="pill pill-danger">Deleted</span>'
+          : '<span class="pill pill-ok">Available</span>'}</td>
+        <td class="mono-cell">${t.timestamp?.slice(0,16)}</td>
+        <td style="display:flex;gap:.5rem;flex-wrap:wrap">
+          ${!t.file_deleted ? `<button class="btn btn-ghost btn-sm" onclick="doReceive(${t.id})">📥 Decrypt</button>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="doVerifyModal(${t.id})">🔍 Verify</button>
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+async function loadInboxCount() {
+  const r = await fetch('/api/inbox');
+  const t = await r.json();
+  const badge = document.getElementById('inbox-count');
+  if (t.length) { badge.textContent = t.length; badge.style.display=''; }
+  else badge.style.display = 'none';
+}
+
+// ── receive / decrypt ─────────────────────────────────────────────────────
+async function doReceive(tid) {
+  toast('Decrypting…', 'info', 8000);
+  try {
+    const r = await fetch(`/api/receive/${tid}`, {method:'POST'});
+    const d = await r.json();
+    const body = document.getElementById('modal-receive-body');
+    if (!d.success) {
+      body.innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:.8rem">⛔ ${d.error}</div>`;
+    } else {
+      const md5ok  = d.md5_match;
+      const sigok  = d.signature_valid;
+      body.innerHTML = `
+        <div class="result-row">
+          <div class="result-icon">${md5ok?'✅':'❌'}</div>
+          <div><div class="result-key">MD5 Integrity</div>
+            <div class="result-val">${md5ok ? 'MATCH — File untampered' : 'MISMATCH — File may be corrupted!'}</div>
+            <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.3rem">${d.computed_md5}</div>
+          </div>
+        </div>
+        <div class="result-row">
+          <div class="result-icon">${sigok?'✅':'❌'}</div>
+          <div><div class="result-key">Digital Signature</div>
+            <div class="result-val">${sigok ? 'VALID — Sender authenticated' : 'INVALID — Authentication failed!'}</div>
+          </div>
+        </div>
+        <div class="result-row">
+          <div class="result-icon">⏱</div>
+          <div><div class="result-key">Total Decrypt Time</div>
+            <div class="result-val" style="font-family:var(--mono)">${d.total_ms} ms</div>
+          </div>
+        </div>
+        ${md5ok && sigok ? `
+        <div style="margin-top:1.25rem">
+          <button class="btn btn-primary" onclick="downloadDecrypted('${d.filename}','${d.file_data_b64}')">
+            ⬇ Download Decrypted File
+          </button>
+        </div>` : '<div style="color:var(--danger);font-family:var(--mono);font-size:.75rem;margin-top:.75rem">⚠ Verification failed — download not allowed.</div>'}
+      `;
+    }
+    openModal('modal-receive');
+  } catch(e) { toast('Decryption request failed.', 'error'); }
+}
+
+function downloadDecrypted(filename, b64) {
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const blob  = new Blob([bytes]);
+  const a     = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ── sent ──────────────────────────────────────────────────────────────────
+async function loadSent() {
+  const r = await fetch('/api/sent');
+  const transfers = await r.json();
+  const wrap = document.getElementById('sent-table-wrap');
+  if (!transfers.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="e-icon">📂</div>Nothing sent yet.</div>';
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>ID</th><th>To</th><th>Filename</th><th>Size</th><th>File</th><th>Date</th><th>Actions</th></tr></thead>
+    <tbody>${transfers.map(t => `
+      <tr>
+        <td class="mono-cell">#${t.id}</td>
+        <td><strong>${t.receiver}</strong></td>
+        <td>${t.original_filename}</td>
+        <td class="mono-cell">${t.file_size ? (t.file_size/1024).toFixed(1)+'KB' : '—'}</td>
+        <td>${t.file_deleted
+          ? '<span class="pill pill-danger">Deleted</span>'
+          : '<span class="pill pill-ok">Stored</span>'}</td>
+        <td class="mono-cell">${t.timestamp?.slice(0,16)}</td>
+        <td style="display:flex;gap:.5rem;flex-wrap:wrap">
+          ${!t.file_deleted ? `<button class="btn btn-danger btn-sm" onclick="deleteTransfer(${t.id},this)">🗑 Delete</button>` : '—'}
+          <button class="btn btn-ghost btn-sm" onclick="doVerifyModal(${t.id})">🔍</button>
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+async function deleteTransfer(tid, btn) {
+  if (!confirm('Delete the encrypted file from storage? The recipient will no longer be able to decrypt it.')) return;
+  btn.disabled = true; btn.textContent = '…';
+  const r = await fetch(`/api/transfer/${tid}/delete`, {method:'DELETE'});
+  const d = await r.json();
+  if (d.success) { toast(d.message, 'success'); loadSent(); }
+  else { toast(d.error, 'error'); btn.disabled=false; btn.textContent='🗑 Delete'; }
+}
+
+// ── verify ─────────────────────────────────────────────────────────────────
+async function doVerify() {
+  const tid = document.getElementById('verify-id').value;
+  if (!tid) { toast('Enter a transfer ID.', 'error'); return; }
+  await doVerifyModal(parseInt(tid));
+}
+
+async function doVerifyModal(tid) {
+  const r = await fetch(`/api/verify/${tid}`);
+  const d = await r.json();
+  const body = document.getElementById('modal-verify-body');
+  if (d.error) {
+    body.innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:.8rem">⛔ ${d.error}</div>`;
+  } else {
+    body.innerHTML = `
+      <div class="result-row"><div class="result-icon">📄</div>
+        <div><div class="result-key">File</div><div class="result-val">${d.filename}</div></div>
+      </div>
+      <div class="result-row"><div class="result-icon">👤</div>
+        <div><div class="result-key">Sender → Receiver</div>
+          <div class="result-val">${d.sender} → ${d.receiver}</div></div>
+      </div>
+      <div class="result-row"><div class="result-icon">${d.file_exists?'📦':'🗑'}</div>
+        <div><div class="result-key">Encrypted File on Disk</div>
+          <div class="result-val">${d.file_deleted ? 'Deleted by sender' : d.file_exists ? 'Present' : 'Missing'}</div>
+        </div>
+      </div>
+      <div class="result-row"><div class="result-icon">${d.signature_valid?'✅':'❌'}</div>
+        <div><div class="result-key">Digital Signature</div>
+          <div class="result-val">${d.signature_valid ? 'VALID' : 'INVALID'}</div></div>
+      </div>
+      <div class="result-row"><div class="result-icon">#️⃣</div>
+        <div><div class="result-key">MD5 Digest</div>
+          <div class="result-val" style="font-family:var(--mono);font-size:.72rem">${d.md5_digest}</div></div>
+      </div>
+      <div class="result-row"><div class="result-icon">🏅</div>
+        <div><div class="result-key">Sender Cert Fingerprint</div>
+          <div class="result-val" style="font-family:var(--mono);font-size:.65rem">${d.cert_fingerprint||'—'}</div></div>
+      </div>
+      <div class="result-row"><div class="result-icon">🕐</div>
+        <div><div class="result-key">Timestamp</div><div class="result-val">${d.timestamp}</div></div>
+      </div>
+    `;
+  }
+  openModal('modal-verify');
+}
+
+async function loadAllTransfers() {
+  const r = await fetch('/api/transfers');
+  const transfers = await r.json();
+  const wrap = document.getElementById('all-transfers-wrap');
+  if (!transfers.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="e-icon">📋</div>No transfers yet.</div>';
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>ID</th><th>From</th><th>To</th><th>Filename</th><th>Status</th><th>Date</th><th></th></tr></thead>
+    <tbody>${transfers.map(t=>`
+      <tr>
+        <td class="mono-cell">#${t.id}</td>
+        <td>${t.sender}</td><td>${t.receiver}</td><td>${t.original_filename}</td>
+        <td>${t.file_deleted?'<span class="pill pill-danger">Deleted</span>':'<span class="pill pill-ok">Active</span>'}</td>
+        <td class="mono-cell">${t.timestamp?.slice(0,16)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="doVerifyModal(${t.id})">🔍</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+// ── certificates ───────────────────────────────────────────────────────────
+async function loadCerts() {
+  const r = await fetch('/api/users');
+  const users = await r.json();
+  const all = [currentUser, ...users.filter(u => u.username !== currentUser?.username)];
+  const wrap = document.getElementById('certs-table-wrap');
+  if (!all.length) { wrap.innerHTML='<div class="empty-state">No users.</div>'; return; }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>User</th><th>Email</th><th>Fingerprint</th><th>Status</th><th>Since</th><th>View</th></tr></thead>
+    <tbody>${all.map(u=>`
+      <tr>
+        <td><strong>${u.username}${u.username===currentUser?.username?' (you)':''}</strong></td>
+        <td class="mono-cell">${u.email||'—'}</td>
+        <td class="mono-cell" style="font-size:.62rem">${(u.cert_fingerprint||'').slice(0,23)}…</td>
+        <td>${u.key_revoked
+          ? '<span class="pill pill-danger">Revoked</span>'
+          : '<span class="pill pill-ok">Active</span>'}</td>
+        <td class="mono-cell">${(u.created_at||'').slice(0,10)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="viewCert('${u.username}')">📜 View</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+async function viewCert(username) {
+  const r = await fetch(`/api/users/${username}/certificate`);
+  const d = await r.json();
+  document.getElementById('modal-cert-body').innerHTML = `
+    <div class="result-row"><div class="result-icon">👤</div>
+      <div><div class="result-key">Subject</div><div class="result-val">${d.username} &lt;${d.email}&gt;</div></div>
+    </div>
+    <div class="result-row"><div class="result-icon">#️⃣</div>
+      <div><div class="result-key">Serial</div><div class="result-val" style="font-family:var(--mono)">${d.serial}</div></div>
+    </div>
+    <div class="result-row"><div class="result-icon">🔑</div>
+      <div><div class="result-key">SHA-256 Fingerprint</div>
+        <div class="result-val" style="font-family:var(--mono);font-size:.68rem">${d.fingerprint}</div></div>
+    </div>
+    <div class="result-row"><div class="result-icon">${d.revoked?'⛔':'✅'}</div>
+      <div><div class="result-key">Status</div>
+        <div class="result-val">${d.revoked ? 'REVOKED' : 'Valid · Expires in ~365 days'}</div></div>
+    </div>
+    <div class="result-key" style="margin-top:1rem">PEM Certificate</div>
+    <div class="cert-box">${d.certificate}</div>
+    <button class="btn btn-ghost" style="margin-top:.75rem;width:100%"
+      onclick="copyText(\`${d.certificate}\`)">📋 Copy PEM</button>
+  `;
+  openModal('modal-cert');
+}
+
+function copyText(txt) {
+  navigator.clipboard.writeText(txt);
+  toast('Copied to clipboard.', 'success', 2000);
+}
+
+async function confirmRevoke() {
+  if (!confirm(`⚠ Revoke your key? You will be logged out and won't be able to receive files. This cannot be undone.`)) return;
+  const r = await fetch(`/api/users/${currentUser.username}/revoke`, {method:'POST'});
+  const d = await r.json();
+  if (d.success) { toast(d.message, 'success'); setTimeout(()=>window.location='/', 1500); }
+  else toast(d.error, 'error');
+}
+
+// ── stats ──────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const r = await fetch('/api/stats');
+  const rows = await r.json();
+  const wrap = document.getElementById('stats-table-wrap');
+
+  const sends    = rows.filter(r => r.action === 'send');
+  const receives = rows.filter(r => r.action === 'receive');
+  const avg = (arr, key) => arr.length ? (arr.reduce((a,b)=>a+(b[key]||0),0)/arr.length).toFixed(2) : '—';
+
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat-card">
+      <div class="s-label">Total Transfers</div>
+      <div class="s-val">${rows.length}</div>
+      <div class="s-sub">send + receive events</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Avg Send Time</div>
+      <div class="s-val" style="font-size:1.4rem;font-family:var(--mono)">${avg(sends,'total_time_ms')}<span style="font-size:.75rem"> ms</span></div>
+      <div class="s-sub">over ${sends.length} send(s)</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Avg Receive Time</div>
+      <div class="s-val" style="font-size:1.4rem;font-family:var(--mono)">${avg(receives,'total_time_ms')}<span style="font-size:.75rem"> ms</span></div>
+      <div class="s-sub">over ${receives.length} receive(s)</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Avg AES Encrypt</div>
+      <div class="s-val" style="font-size:1.4rem;font-family:var(--mono)">${avg(sends,'aes_encrypt_time_ms')}<span style="font-size:.75rem"> ms</span></div>
+      <div class="s-sub">AES-256-CBC</div>
+    </div>
+  `;
+
+  if (!rows.length) { wrap.innerHTML='<div class="empty-state"><div class="e-icon">📊</div>No stats yet.</div>'; return; }
+  wrap.innerHTML = `<table class="stats-table">
+    <thead><tr>
+      <th>ID</th><th>User</th><th>Action</th><th>File</th>
+      <th>MD5</th><th>AES-K</th><th>AES-E</th><th>RSA-W</th><th>Sign</th><th>Dec</th><th>Verify</th><th>Total</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>`
+      <tr>
+        <td class="mono-cell">#${r.id}</td>
+        <td>${r.username}</td>
+        <td><span class="pill ${r.action==='send'?'pill-ok':'pill-warn'}">${r.action}</span></td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.original_filename}</td>
+        <td class="ms-val">${r.md5_time_ms?.toFixed(2)||'—'}</td>
+        <td class="ms-val">${r.aes_key_gen_time_ms?.toFixed(2)||'—'}</td>
+        <td class="ms-val">${r.aes_encrypt_time_ms?.toFixed(2)||'—'}</td>
+        <td class="ms-val">${r.rsa_key_encrypt_time_ms?.toFixed(2)||'—'}</td>
+        <td class="ms-val">${r.sign_time_ms?.toFixed(2)||'—'}</td>
+        <td class="ms-val">${r.decrypt_aes_time_ms?.toFixed(2)||'—'}</td>
+        <td class="ms-val">${r.verify_sig_time_ms?.toFixed(2)||'—'}</td>
+        <td class="ms-val" style="color:var(--text);font-weight:700">${r.total_time_ms?.toFixed(2)}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+// ── bootstrap ──────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
